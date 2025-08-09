@@ -37,18 +37,56 @@ body, html, #desktop {
 }
 .start-menu-btn span { font-size: 17px; }
 .start-menu-btn:hover { background: #2356a6; }
+
+/* Windows 11 风格分组菜单 */
 .start-menu {
     display: none;
     position: absolute;
     left: 0;
     bottom: 48px;
-    width: 220px;
+    width: 260px;
     background: #ffffffee;
-    border-radius: 0 0 12px 0;
-    box-shadow: 0 2px 12px #0003;
+    border-radius: 0 0 16px 0;
+    box-shadow: 0 2px 20px #0003;
     z-index: 5000;
-    padding: 10px 0;
+    padding: 16px 0 12px 0;
     user-select: none;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.menu-section {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e8f0;
+}
+.menu-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.menu-section-title {
+    font-size: 1.08em;
+    font-weight: 600;
+    color: #2356a6;
+    padding: 4px 24px 8px 24px;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+}
+.menu-item {
+    padding: 8px 28px 8px 35px;
+    cursor: pointer;
+    font-size: 15.7px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border-radius: 7px;
+    margin-bottom: 2px;
+    transition: background 0.13s;
+}
+.menu-item img {
+    width: 20px; height: 20px;
+}
+.menu-item:hover {
+    background: #e6efff;
 }
 
 /* 仿Win10风格任务栏按钮 */
@@ -93,12 +131,6 @@ body, html, #desktop {
     max-width: 100px;
     display: inline-block;
 }
-.menu-item {
-    padding: 10px 28px;
-    cursor: pointer;
-    font-size: 16px;
-}
-.menu-item:hover { background: #e6efff; }
 #window-area {
     position:absolute; left:0;right:0;top:0;bottom:48px; pointer-events: none;
 }
