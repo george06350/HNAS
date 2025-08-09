@@ -1,2 +1,0 @@
-wallpaper1:wallpaper2.png
-wallpaper2:wallpaper1.png
