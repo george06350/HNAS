@@ -62,7 +62,7 @@ HNAS/
 
 ## 截图预览
 
-> ![桌面界面截图](https://user-images.githubusercontent.com/your-username/hnas-desktop-ui-demo.png](https://github.com/george06350/HNAS/blob/main/data/system/readme.png)](https://github.com/george06350/HNAS/blob/main/data/system/readme.png)  
+> ![桌面界面截图](https://github.com/george06350/HNAS/blob/main/data/system/readme.png)  
 
 ---
 
