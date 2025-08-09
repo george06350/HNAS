@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HNAS 桌面</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/desktop.css">
+</head>
+<body>
+<div id="desktop" class="desktop-bg">
+    <div id="taskbar" class="taskbar"></div>
+    <div id="start-menu-btn" class="start-menu-btn">
+        <img src="https://img.icons8.com/ios-filled/32/000000/windows8.png" style="vertical-align:middle;">
+        <span></span>
+    </div>
+    <div id="start-menu" class="start-menu">
+        <div class="menu-item" onclick="openWindow('filemanager')">
+            <img src="https://img.icons8.com/ios-filled/24/000000/folder-invoices--v1.png" style="vertical-align:middle;">
+            文件管理器
+        </div>
+        <div class="menu-item" onclick="openWindow('about')">
+            <img src="https://img.icons8.com/ios-filled/24/000000/info--v1.png" style="vertical-align:middle;">
+            关于 HNAS
+        </div>
+        <div class="menu-item" onclick="window.location.href='/logout'">
+            <img src="https://img.icons8.com/ios-filled/24/000000/logout-rounded-left.png" style="vertical-align:middle;">
+            退出登录
+        </div>
+    </div>
+    <div id="window-area"></div>
+</div>
+<script src="/static/desktop.js"></script>
+</body>
+</html>
