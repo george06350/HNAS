@@ -1,12 +1,3 @@
-# =============================================================
-#  HNAS - 轻量级家庭NAS工具
-#  Copyright (c) 2024-2025 George06350. All Rights Reserved.
-#  项目地址: https://github.com/george06350/HNAS
-#
-#  本项目源码仅供学习与个人非商业用途使用。
-#  未经许可，不得用于商业用途或翻版传播。
-# =============================================================
-
 import os
 import platform
 import socket
@@ -15,12 +6,12 @@ import requests
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, abort
 
 DATA_ROOT = os.path.abspath('data')
-USER_BASE = os.path.join(DATA_ROOT, 'users')
-USER_CFG_BASE = os.path.join(DATA_ROOT, 'system', 'user')
-WALLPAPER_DIR = os.path.join(DATA_ROOT, "system", "wallpaper")
+SYSTEM_ROOT = os.path.join(DATA_ROOT, 'system')
+USER_BASE = os.path.join(SYSTEM_ROOT, 'users')  # 由 data/users -> data/system/users
+USER_CFG_BASE = os.path.join(SYSTEM_ROOT, 'user-data')  # 由 data/system/user -> data/system/user-data
+WALLPAPER_DIR = os.path.join(SYSTEM_ROOT, "wallpaper")
 
 def ensure_wallpaper_dir_and_files():
-    """自动创建壁纸目录，并下载默认壁纸文件（如不存在）"""
     os.makedirs(WALLPAPER_DIR, exist_ok=True)
     default_wallpapers = {
         "wallpaper1.png": "https://raw.githubusercontent.com/george06350/HNAS-File/main/wallpaper/wallpaper1.png",
@@ -56,6 +47,7 @@ def user_exists(username):
     return os.path.exists(user_config_path(username))
 
 def create_user(username, password):
+    os.makedirs(USER_CFG_BASE, exist_ok=True)
     now = datetime.datetime.now().strftime('%Y/%m/%d+%H:%M:%S')
     os.makedirs(os.path.join(USER_BASE, username, "file"), exist_ok=True)
     cfg_path = user_config_path(username)
@@ -76,14 +68,12 @@ def check_login(username, password):
     return False
 
 def secure_path(rel_path):
-    # 防止目录穿越攻击，返回绝对路径
     full_path = os.path.abspath(os.path.join(DATA_ROOT, rel_path))
     if not full_path.startswith(DATA_ROOT):
         abort(403)
     return full_path
 
 def get_all_users():
-    """获取所有用户名及注册时间，按注册时间升序"""
     users = []
     for fname in os.listdir(USER_CFG_BASE):
         if fname.endswith('.txt'):
@@ -102,9 +92,8 @@ def is_super_admin(username):
     return users and users[0]['username'] == username
 
 def get_current_wallpapers():
-    """读取当前生效的壁纸设置"""
     current_wallpapers = {"wallpaper1": "wallpaper1.png", "wallpaper2": "wallpaper2.png"}
-    wall_select_path = os.path.join(DATA_ROOT, "system", "wallpaper_select.txt")
+    wall_select_path = os.path.join(SYSTEM_ROOT, "wallpaper_select.txt")
     if os.path.exists(wall_select_path):
         with open(wall_select_path, encoding="utf-8") as f:
             for line in f:
@@ -178,18 +167,86 @@ def desktop():
 def filemanager_inner(path):
     if 'username' not in session:
         return "请重新登录！", 401
-    abs_path = secure_path(path)
-    if not os.path.exists(abs_path):
-        return "路径不存在", 404
-    entries = []
-    for name in sorted(os.listdir(abs_path)):
-        entry_path = os.path.join(abs_path, name)
-        entries.append({
-            'name': name,
-            'is_dir': os.path.isdir(entry_path),
-            'rel_path': os.path.relpath(os.path.join(abs_path, name), DATA_ROOT).replace("\\", "/")
-        })
-    return render_template('filemanager_inner.html', entries=entries, cur_path=path)
+    username = session['username']
+    super_admin = is_super_admin(username)
+
+    # 首页
+    if not path.strip():
+        roots = [
+            {"name": "图片文件夹", "rel_path": "system/wallpaper", "type": "wallpaper"},
+            {"name": "用户文件夹", "rel_path": f"system/users/{username}/file", "type": "user"},
+            {"name": "system目录", "rel_path": "system_dir", "type": "system"},
+        ]
+        return render_template('filemanager_inner.html', entries=None, cur_path="", roots=roots)
+
+    # 超级管理员：可以访问全部目录
+    if super_admin:
+        # “system目录”入口和其下所有内容，均只映射 data/system 目录
+        if path == "system_dir" or path.startswith("system_dir/"):
+            # 提取在system_dir后的相对路径
+            sub_path = path[len("system_dir"):].lstrip("/")
+            abs_path = os.path.join(SYSTEM_ROOT, sub_path)
+            if not os.path.exists(abs_path):
+                return "路径不存在", 404
+            entries = []
+            for name in sorted(os.listdir(abs_path)):
+                entry_path = os.path.join(abs_path, name)
+                # rel_path 保证继续带 system_dir 前缀
+                rel_entry = f"system_dir/{sub_path}/{name}".replace("//", "/").strip("/")
+                entries.append({
+                    'name': name,
+                    'is_dir': os.path.isdir(entry_path),
+                    'rel_path': rel_entry
+                })
+            return render_template('filemanager_inner.html', entries=entries, cur_path=path, roots=None)
+        # 其余路径，直接展示
+        abs_path = secure_path(path)
+        if not os.path.exists(abs_path):
+            return "路径不存在", 404
+        entries = []
+        for name in sorted(os.listdir(abs_path)):
+            entry_path = os.path.join(abs_path, name)
+            rel_entry = os.path.relpath(entry_path, DATA_ROOT).replace("\\", "/")
+            entries.append({
+                'name': name,
+                'is_dir': os.path.isdir(entry_path),
+                'rel_path': rel_entry
+            })
+        return render_template('filemanager_inner.html', entries=entries, cur_path=path, roots=None)
+
+    # 普通用户
+    if path == f"system/users/{username}/file" or path.startswith(f"system/users/{username}/file/"):
+        abs_path = secure_path(path)
+        if not os.path.exists(abs_path):
+            return "路径不存在", 404
+        entries = []
+        for name in sorted(os.listdir(abs_path)):
+            entry_path = os.path.join(abs_path, name)
+            rel_entry = os.path.relpath(entry_path, DATA_ROOT).replace("\\", "/")
+            entries.append({
+                'name': name,
+                'is_dir': os.path.isdir(entry_path),
+                'rel_path': rel_entry
+            })
+        return render_template('filemanager_inner.html', entries=entries, cur_path=path, roots=None)
+
+    if path == "system/wallpaper" or path.startswith("system/wallpaper/"):
+        abs_path = secure_path(path)
+        if not os.path.exists(abs_path):
+            return "路径不存在", 404
+        entries = []
+        for name in sorted(os.listdir(abs_path)):
+            entry_path = os.path.join(abs_path, name)
+            rel_entry = os.path.relpath(entry_path, DATA_ROOT).replace("\\", "/")
+            entries.append({
+                'name': name,
+                'is_dir': os.path.isdir(entry_path),
+                'rel_path': rel_entry
+            })
+        return render_template('filemanager_inner.html', entries=entries, cur_path=path, roots=None)
+
+    # 非超级管理员禁止访问其他目录
+    return "无权限访问此目录", 403
 
 @app.route('/filemanager_inner/upload', methods=['POST'])
 def upload_file_inner():
@@ -197,6 +254,13 @@ def upload_file_inner():
         return "请重新登录！", 401
     cur_path = request.form.get('cur_path', '')
     abs_path = secure_path(cur_path)
+    username = session['username']
+    super_admin = is_super_admin(username)
+    if not super_admin and not (
+        cur_path.startswith("system/wallpaper")
+        or cur_path.startswith(f"system/users/{username}/file")
+    ):
+        return "无权限上传到此目录", 403
     file = request.files['file']
     if file:
         file.save(os.path.join(abs_path, file.filename))
@@ -209,11 +273,39 @@ def download_file_inner(path):
     if 'username' not in session:
         return "请重新登录！", 401
     abs_path = secure_path(path)
+    username = session['username']
+    super_admin = is_super_admin(username)
+    if not super_admin and not (
+        path.startswith("system/wallpaper")
+        or path.startswith(f"system/users/{username}/file")
+    ):
+        return "无权限下载此文件", 403
     if not os.path.isfile(abs_path):
         return "文件不存在", 404
     rel_dir = os.path.dirname(path)
     filename = os.path.basename(path)
     return send_from_directory(secure_path(rel_dir), filename, as_attachment=True)
+
+@app.route('/filemanager_inner/preview/<path:path>')
+def filemanager_image_preview(path):
+    if 'username' not in session:
+        return "请重新登录！", 401
+    username = session['username']
+    super_admin = is_super_admin(username)
+    if not super_admin and not (
+        path.startswith("system/wallpaper")
+        or path.startswith(f"system/users/{username}/file")
+    ):
+        return "无权限在线预览", 403
+    abs_path = secure_path(path)
+    if not os.path.isfile(abs_path):
+        return "文件不存在", 404
+    ext = os.path.splitext(path)[-1].lower()
+    if ext not in [".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp"]:
+        return "仅支持图片在线预览", 400
+    rel_dir = os.path.dirname(path)
+    filename = os.path.basename(path)
+    return send_from_directory(secure_path(rel_dir), filename)
 
 @app.route('/about_inner')
 def about_inner():
@@ -229,11 +321,10 @@ def settings_inner():
     users = get_all_users()
     super_admin = is_super_admin(session['username'])
 
-    # -- 壁纸设置 --
     ensure_wallpaper_dir_and_files()
     wall_files = sorted([f for f in os.listdir(WALLPAPER_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
     current_wallpapers = get_current_wallpapers()
-    current_wall_path = os.path.join(DATA_ROOT, "system", "wallpaper_select.txt")
+    current_wall_path = os.path.join(SYSTEM_ROOT, "wallpaper_select.txt")
     if request.method == 'POST' and request.form.get('action') == 'change_wallpaper':
         wp1 = request.form.get('wallpaper1', 'wallpaper1.png')
         wp2 = request.form.get('wallpaper2', 'wallpaper2.png')
@@ -242,7 +333,6 @@ def settings_inner():
         current_wallpapers["wallpaper1"] = wp1
         current_wallpapers["wallpaper2"] = wp2
         message = "壁纸设置已更新"
-    # -- 多用户管理 --
     if request.method == 'POST' and request.form.get('action') == 'create_user':
         new_username = request.form.get('new_username', '').strip()
         new_password = request.form.get('new_password', '').strip()
@@ -268,7 +358,6 @@ def settings_inner():
                 shutil.rmtree(user_folder)
             message = f"用户 {del_username} 已删除"
         users = get_all_users()
-    # -- 账号设置 --
     if request.method == 'POST' and not request.form.get('action'):
         pwd = request.form.get('new_password', '').strip()
         if pwd:
