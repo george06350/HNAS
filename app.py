@@ -4,6 +4,7 @@ import socket
 import datetime
 import requests
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, abort
+import hashlib
 
 DATA_ROOT = os.path.abspath('data')
 SYSTEM_ROOT = os.path.join(DATA_ROOT, 'system')
@@ -51,6 +52,7 @@ def create_user(username, password):
     now = datetime.datetime.now().strftime('%Y/%m/%d+%H:%M:%S')
     os.makedirs(os.path.join(USER_BASE, username, "file"), exist_ok=True)
     cfg_path = user_config_path(username)
+    password = hashlib.sha256(password.encode()).hexdigest()
     with open(cfg_path, 'w', encoding='utf-8') as f:
         f.write(f"username : {username}\n")
         f.write(f"password : {password}\n")
@@ -58,6 +60,7 @@ def create_user(username, password):
 
 def check_login(username, password):
     cfg = user_config_path(username)
+    password = hashlib.sha256(password.encode()).hexdigest()
     if not os.path.exists(cfg):
         return False
     with open(cfg, 'r', encoding='utf-8') as f:
@@ -110,6 +113,7 @@ def register():
     if request.method == 'POST':
         username = request.form['username'].strip()
         password = request.form['password'].strip()
+        password = hashlib.sha256(password.encode()).hexdigest()
         if not username or not password:
             flash('用户名和密码不能为空', 'danger')
         elif user_exists(username):
@@ -128,12 +132,14 @@ def login():
     if request.method == 'POST':
         username = request.form['username'].strip()
         password = request.form['password'].strip()
+        password = hashlib.sha256(password.encode()).hexdigest()
         if not username or not password:
             flash('用户名和密码不能为空', 'danger')
         elif not user_exists(username):
             flash('用户不存在', 'danger')
         elif not check_login(username, password):
             flash('密码不正确', 'danger')
+            print(f"登录失败：用户名 {username} 密码错误，輸入的密码哈希值为 {password}")
         else:
             session['username'] = username
             flash('登录成功！', 'success')
@@ -336,6 +342,7 @@ def settings_inner():
     if request.method == 'POST' and request.form.get('action') == 'create_user':
         new_username = request.form.get('new_username', '').strip()
         new_password = request.form.get('new_password', '').strip()
+        new_password = hashlib.sha256(new_password.encode()).hexdigest()
         if not new_username or not new_password:
             message = "用户名和密码不能为空"
         elif user_exists(new_username):
@@ -362,6 +369,7 @@ def settings_inner():
         pwd = request.form.get('new_password', '').strip()
         if pwd:
             path = user_config_path(session['username'])
+            pwd = hashlib.sha256(pwd.encode()).hexdigest()
             with open(path, "r", encoding='utf-8') as f:
                 lines = f.readlines()
             with open(path, "w", encoding='utf-8') as f:
