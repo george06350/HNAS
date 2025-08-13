@@ -175,3 +175,22 @@ document.addEventListener('click', function(e){
         updateTaskbar();
     }
 });
+win.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    menu.style.top = e.clientY + 'px';
+    menu.style.left = e.clientX + 'px';
+    menu.innerHTML = `<div class="context-item">${win.dataset.pinned === "true" ? "取消置頂" : "置頂鎖定"}</div>`;
+    document.body.appendChild(menu);
+
+    menu.onclick = function() {
+        win.dataset.pinned = win.dataset.pinned === "true" ? "false" : "true";
+        win.style.zIndex = win.dataset.pinned === "true" ? 9999 : ++zIndexCounter;
+        menu.remove();
+        updateTaskbar();
+    };
+
+    document.addEventListener('click', () => menu.remove(), { once: true });
+});
+
