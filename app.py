@@ -1,8 +1,15 @@
+# 自動安裝模組工具
 from autoinstall import import_or_install
 
-# 自動安裝 & 匯入必要套件
+# ===== 標準庫 =====
 os = import_or_install("os")
-datetime = import_or_install("datetime").datetime
+platform = import_or_install("platform")
+socket = import_or_install("socket")
+datetime_module = import_or_install("datetime")
+datetime = datetime_module.datetime
+hashlib = import_or_install("hashlib")
+
+# ===== 第三方套件 =====
 Flask = import_or_install("flask").Flask
 render_template = import_or_install("flask").render_template
 request = import_or_install("flask").request
@@ -12,18 +19,13 @@ session = import_or_install("flask").session
 flash = import_or_install("flask").flash
 send_from_directory = import_or_install("flask").send_from_directory
 abort = import_or_install("flask").abort
+
 generate_password_hash = import_or_install("werkzeug.security").generate_password_hash
 check_password_hash = import_or_install("werkzeug.security").check_password_hash
 secure_filename = import_or_install("werkzeug.utils").secure_filename
 
-import os
-import platform
-import socket
-import datetime
-import requests
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, abort
-from ai_module.goblin_ai import GoblinAI
-import hashlib
+requests = import_or_install("requests")
+GoblinAI = import_or_install("ai_module.goblin_ai").GoblinAI
 
 DATA_ROOT = os.path.abspath('data')
 SYSTEM_ROOT = os.path.join(DATA_ROOT, 'system')
@@ -68,7 +70,7 @@ def user_exists(username):
 
 def create_user(username, password):
     os.makedirs(USER_CFG_BASE, exist_ok=True)
-    now = datetime.datetime.now().strftime('%Y/%m/%d+%H:%M:%S')
+    now = datetime.now().strftime('%Y/%m/%d+%H:%M:%S')
     os.makedirs(os.path.join(USER_BASE, username, "file"), exist_ok=True)
     cfg_path = user_config_path(username)
     password = hashlib.sha256(password.encode()).hexdigest()
