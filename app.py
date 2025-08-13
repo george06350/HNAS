@@ -1,3 +1,21 @@
+from autoinstall import import_or_install
+
+# 自動安裝 & 匯入必要套件
+os = import_or_install("os")
+datetime = import_or_install("datetime").datetime
+Flask = import_or_install("flask").Flask
+render_template = import_or_install("flask").render_template
+request = import_or_install("flask").request
+redirect = import_or_install("flask").redirect
+url_for = import_or_install("flask").url_for
+session = import_or_install("flask").session
+flash = import_or_install("flask").flash
+send_from_directory = import_or_install("flask").send_from_directory
+abort = import_or_install("flask").abort
+generate_password_hash = import_or_install("werkzeug.security").generate_password_hash
+check_password_hash = import_or_install("werkzeug.security").check_password_hash
+secure_filename = import_or_install("werkzeug.utils").secure_filename
+
 import os
 import platform
 import socket
