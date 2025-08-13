@@ -167,3 +167,10 @@ document.addEventListener('click', function(e){
         updateTaskbar();
     }
 });
+document.addEventListener('click', function(e){
+    let win = e.target.closest('.win');
+    if (win) {
+        win.style.zIndex = ++zIndexCounter;
+        updateTaskbar();
+    }
+});
