@@ -12,6 +12,7 @@ window.onload = function() {
 };
 let zIndexCounter = 1000;
 let winIdCounter = 0;
+let startMenuPinned = false;
 const winIcons = {
     filemanager: `<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#2356a6" d="M3 6V4a2 2 0 0 1 2-2h5.17a2 2 0 0 1 1.41.59L13.59 4H21a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 2v10h18V6h-8.59l-2-2H5v2zm5 2h2v2h-2v-2z"></path></svg>`,
     about: `<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2356a6"/><rect x="11" y="11" width="2" height="6" fill="#fff"/><rect x="11" y="7" width="2" height="2" fill="#fff"/></svg>`,
@@ -193,4 +194,5 @@ win.addEventListener('contextmenu', function(e) {
 
     document.addEventListener('click', () => menu.remove(), { once: true });
 });
+
 
