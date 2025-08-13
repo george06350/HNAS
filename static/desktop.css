@@ -347,3 +347,43 @@ body, html, #desktop {
 .power-item:last-child {
     border-bottom: none;
 }
+
+#shutdown-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, #000 0%, #111 100%);
+    color: #fff;
+    font-family: 'Segoe UI', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+.shutdown-dialog {
+    text-align: center;
+    animation: pulse 1.5s infinite;
+}
+
+.shutdown-text {
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+.goblin-quote {
+    font-size: 16px;
+    font-style: italic;
+    color: #7f5af0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
