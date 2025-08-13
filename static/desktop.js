@@ -211,5 +211,25 @@ win.addEventListener('contextmenu', function(e) {
     document.addEventListener('click', () => menu.remove(), { once: true });
 });
 
+document.getElementById('power-btn').onclick = function() {
+    const menu = document.getElementById('power-menu');
+    menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+};
+
+function sleepMode() {
+    alert("🛌 系统进入睡眠模式（模拟）");
+    document.getElementById('power-menu').style.display = 'none';
+}
+
+function restartSystem() {
+    alert("🔄 系统重启中（模拟）");
+    location.reload();
+}
+
+function shutdownSystem() {
+    alert("⛔ 系统已关闭（模拟）");
+    document.body.innerHTML = '<div style="color:#fff;background:#000;height:100vh;display:flex;align-items:center;justify-content:center;font-size:24px;">HNAS 已关闭</div>';
+}
+
 
 
