@@ -53,6 +53,7 @@ function createWindow(title, url, appType, icon) {
     windowArea.appendChild(win);
     win.style.resize = 'both';
     win.style.overflow = 'auto';
+    win.dataset.pinned = "false";
 
     // 拖动
     const titlebar = win.querySelector('.win-titlebar');
@@ -169,7 +170,7 @@ document.addEventListener('click', function(e){
 });
 document.addEventListener('click', function(e){
     let win = e.target.closest('.win');
-    if (win) {
+    if (win && win.dataset.pinned !== "true") {
         win.style.zIndex = ++zIndexCounter;
         updateTaskbar();
     }
