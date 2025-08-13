@@ -18,25 +18,18 @@ const winIcons = {
     settings: `<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#2356a6" d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm7.43-3.78l2.06-1.63a1 1 0 0 0 .21-1.32l-2-3.46a1 1 0 0 0-1.25-.45l-2.43.98a7.03 7.03 0 0 0-1.5-.87l-.37-2.6A1 1 0 0 0 12 2h-4a1 1 0 0 0-1 .88l-.38 2.6c-.54.23-1.05.51-1.5.87l-2.43-.98a1 1 0 0 0-1.25.45l-2 3.46a1 1 0 0 0 .21 1.32l2.06 1.63a6.85 6.85 0 0 0 0 1.74l-2.06 1.63a1 1 0 0 0-.21 1.32l2 3.46a1 1 0 0 0 1.25.45l2.43-.98c.45.36.96.64 1.5.87l.38 2.6A1 1 0 0 0 8 22h4a1 1 0 0 0 1-.88l.37-2.6c.54-.23 1.05-.51 1.5-.87l2.43.98a1 1 0 0 0 1.25-.45l2-3.46a1 1 0 0 0-.21-1.32l-2.06-1.63c.09-.29.09-.6 0-.89z"></path></svg>`
 };
 function openWindow(app) {
-    let winTitle, url, icon;
-    if (app === 'filemanager') {
-        winTitle = '文件管理器';
-        url = '/filemanager_inner/';
-        icon = winIcons.filemanager;
-    } else if (app === 'about') {
-        winTitle = '关于 HNAS';
-        url = '/about_inner';
-        icon = winIcons.about;
-    } else if (app === 'settings') {
-        winTitle = '设置';
-        url = '/settings_inner';
-        icon = winIcons.settings;
-    } else if (app === 'goblin_ai') {
-        winTitle = 'Goblin Chat';
-        url = '/goblin_ai_inner';
-    } else {
-        return;
-    }
+    const winTitleMap = {
+        filemanager: '文件管理器',
+        about: '关于 HNAS',
+        settings: '设置',
+        goblin_ai: 'Goblin Chat'
+    };
+
+    const iconMap = winIcons;
+    const winTitle = winTitleMap[app] || '未知窗口';
+    const url = `/window/${app}`;
+    const icon = iconMap[app] || '';
+
     createWindow(winTitle, url, app, icon);
 }
 
@@ -57,6 +50,8 @@ function createWindow(title, url, appType, icon) {
     </div>
     <iframe src="${url}" class="win-content" frameborder="0"></iframe>`;
     windowArea.appendChild(win);
+    win.style.resize = 'both';
+    win.style.overflow = 'auto';
 
     // 拖动
     const titlebar = win.querySelector('.win-titlebar');
