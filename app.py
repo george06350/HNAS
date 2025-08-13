@@ -19,7 +19,6 @@ session = import_or_install("flask").session
 flash = import_or_install("flask").flash
 send_from_directory = import_or_install("flask").send_from_directory
 abort = import_or_install("flask").abort
-
 generate_password_hash = import_or_install("werkzeug.security").generate_password_hash
 check_password_hash = import_or_install("werkzeug.security").check_password_hash
 secure_filename = import_or_install("werkzeug.utils").secure_filename
@@ -80,6 +79,7 @@ def create_user(username, password):
         f.write(f"register-time : {now}\n")
 
 def check_login(username, password):
+    global debug
     cfg = user_config_path(username)
     password = hashlib.sha256(password.encode()).hexdigest()
     if not os.path.exists(cfg):
@@ -88,6 +88,8 @@ def check_login(username, password):
         lines = f.readlines()
     for line in lines:
         if line.startswith('password : '):
+            if app.debug:
+                print(f"[DEBUG] 检查登录：用户名 {username}，输入的密码哈希值 {password}，实际存储的哈希值 {line.strip().split(' : ')[1]}")
             return line.strip().split(' : ')[1] == password
     return False
 
@@ -160,7 +162,8 @@ def login():
             flash('用户不存在', 'danger')
         elif not check_login(username, password):
             flash('密码不正确', 'danger')
-            print(f"登录失败：用户名 {username} 密码错误，輸入的密码哈希值为 {password}")
+            if app.debug:
+                print(f"登录失败：用户名 {username} 密码错误，輸入的密码哈希值为 {password}, 但实际存储的哈希值不匹配。")
         else:
             session['username'] = username
             flash('登录成功！', 'success')
