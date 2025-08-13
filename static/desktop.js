@@ -227,21 +227,33 @@ function restartSystem() {
 }
 
 function shutdownSystem() {
+    const quotes = [
+        "「你真的要關掉我嗎？我還沒完成 anime 備份！」",
+        "「NAS：我不想工作了，我想去當藝術家。」",
+        "「關機是種解脫，也是種背叛。」",
+        "「我會夢見你的 debug 日誌。」"
+    ];
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+
     const overlay = document.createElement('div');
     overlay.id = 'shutdown-overlay';
     overlay.innerHTML = `
         <div class="shutdown-dialog">
             <div class="shutdown-text">⛔ HNAS 正在關閉...</div>
-            <div class="goblin-quote">
-            const quotes = [
-            "「你真的要關掉我嗎？我還沒完成 anime 備份！」",
-            "「NAS：我不想工作了，我想去當藝術家。」",
-            "「關機是種解脫，也是種背叛。」",
-            "「我會夢見你的 debug 日誌。」"
-];
-const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-</div>
-        </div>
+            <div class="goblin-quote">${randomQuote}</div>
+        </div>;
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+        overlay.innerHTML = `
+            <div class="shutdown-dialog">
+                <div class="shutdown-text">🧠 NAS 已進入沉睡。</div>
+                <div class="goblin-quote">「再見了，資料奴隸。」</div>
+            </div>
+        `;
+    }, 3000);
+}
+
     `;
     document.body.appendChild(overlay);
 
@@ -254,6 +266,7 @@ const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
         `;
     }, 3000);
 }
+
 
 
 
