@@ -7,7 +7,9 @@ document.body.onclick = function(e) {
         document.getElementById('start-menu').style.display = 'none';
     }
 }
-
+window.onload = function() {
+    openWindow('goblin_ai');
+};
 let zIndexCounter = 1000;
 let winIdCounter = 0;
 const winIcons = {
@@ -29,6 +31,9 @@ function openWindow(app) {
         winTitle = '设置';
         url = '/settings_inner';
         icon = winIcons.settings;
+    } else if (app === 'goblin_ai') {
+        winTitle = 'Goblin Chat';
+        url = '/goblin_ai_inner';
     } else {
         return;
     }
