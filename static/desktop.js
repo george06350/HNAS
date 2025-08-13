@@ -1,6 +1,22 @@
 document.getElementById('start-menu-btn').onclick = function() {
-    var menu = document.getElementById('start-menu');
-    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    const menu = document.getElementById('start-menu');
+    if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+    } else {
+        menu.style.display = 'block';
+        // 加入固定選項
+        if (!document.getElementById('pin-start-menu')) {
+            const pinItem = document.createElement('div');
+            pinItem.id = 'pin-start-menu';
+            pinItem.className = 'menu-item';
+            pinItem.innerHTML = '📌 固定开始菜单';
+            pinItem.onclick = function() {
+                startMenuPinned = !startMenuPinned;
+                pinItem.innerHTML = startMenuPinned ? '❌ 取消固定' : '📌 固定开始菜单';
+            };
+            menu.appendChild(pinItem);
+        }
+    }
 };
 document.body.onclick = function(e) {
     if (!e.target.closest('#start-menu') && !e.target.closest('#start-menu-btn')) {
@@ -162,11 +178,11 @@ function closeSvg() {
 }
 
 // 保证窗口激活时高亮任务栏
-document.addEventListener('click', function(e){
-    let win = e.target.closest('.win');
-    if (win) {
-        win.style.zIndex = ++zIndexCounter;
-        updateTaskbar();
+document.body.addEventListener('click', function(e) {
+    const isStartMenuClick = e.target.closest('#start-menu') || e.target.closest('#start-menu-btn');
+    const isWindowClick = e.target.closest('.win');
+    if (!isStartMenuClick && !isWindowClick && !startMenuPinned) {
+        document.getElementById('start-menu').style.display = 'none';
     }
 });
 document.addEventListener('click', function(e){
@@ -194,5 +210,6 @@ win.addEventListener('contextmenu', function(e) {
 
     document.addEventListener('click', () => menu.remove(), { once: true });
 });
+
 
 
