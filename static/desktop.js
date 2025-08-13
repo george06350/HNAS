@@ -29,6 +29,7 @@ function openWindow(app) {
     const winTitle = winTitleMap[app] || '未知窗口';
     const url = `/window/${app}`;
     const icon = iconMap[app] || '';
+    win.style.zIndex = ++zIndexCounter;
 
     createWindow(winTitle, url, app, icon);
 }
