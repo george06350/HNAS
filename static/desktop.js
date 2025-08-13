@@ -227,9 +227,27 @@ function restartSystem() {
 }
 
 function shutdownSystem() {
-    alert("⛔ 系统已关闭（模拟）");
-    document.body.innerHTML = '<div style="color:#fff;background:#000;height:100vh;display:flex;align-items:center;justify-content:center;font-size:24px;">HNAS 已关闭</div>';
+    const overlay = document.createElement('div');
+    overlay.id = 'shutdown-overlay';
+    overlay.innerHTML = `
+        <div class="shutdown-dialog">
+            <div class="shutdown-text">⛔ HNAS 正在關閉...</div>
+            <div class="goblin-quote">「你真的要關掉我嗎？我還沒完成 anime 備份！」</div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+        overlay.innerHTML = `
+            <div class="shutdown-dialog">
+                <div class="shutdown-text">🧠 NAS 已進入沉睡。</div>
+                <div class="goblin-quote">「再見了，資料奴隸。」</div>
+            </div>
+        `;
+    }, 3000);
 }
+
+
 
 
 
