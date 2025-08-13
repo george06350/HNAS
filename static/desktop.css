@@ -300,3 +300,50 @@ body, html, #desktop {
 .context-item:hover {
     background: #e6efff;
 }
+
+.power-btn {
+    position: absolute;
+    right: 12px;
+    bottom: 8px;
+    width: 32px;
+    height: 32px;
+    background: #3776d6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 6px #0003;
+    z-index: 4000;
+    transition: background 0.2s;
+}
+.power-btn:hover {
+    background: #2356a6;
+}
+
+.power-menu {
+    position: absolute;
+    right: 12px;
+    bottom: 48px;
+    background: #ffffffee;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px #0003;
+    display: none;
+    flex-direction: column;
+    z-index: 5000;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    overflow: hidden;
+}
+.power-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 15px;
+    border-bottom: 1px solid #e5e8f0;
+    transition: background 0.15s;
+}
+.power-item:hover {
+    background: #e6efff;
+}
+.power-item:last-child {
+    border-bottom: none;
+}
