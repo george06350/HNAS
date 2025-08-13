@@ -232,7 +232,15 @@ function shutdownSystem() {
     overlay.innerHTML = `
         <div class="shutdown-dialog">
             <div class="shutdown-text">⛔ HNAS 正在關閉...</div>
-            <div class="goblin-quote">「你真的要關掉我嗎？我還沒完成 anime 備份！」</div>
+            <div class="goblin-quote">
+            const quotes = [
+            "「你真的要關掉我嗎？我還沒完成 anime 備份！」",
+            "「NAS：我不想工作了，我想去當藝術家。」",
+            "「關機是種解脫，也是種背叛。」",
+            "「我會夢見你的 debug 日誌。」"
+];
+const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+</div>
         </div>
     `;
     document.body.appendChild(overlay);
@@ -246,6 +254,7 @@ function shutdownSystem() {
         `;
     }, 3000);
 }
+
 
 
 
