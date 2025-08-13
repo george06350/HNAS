@@ -446,3 +446,6 @@ def upload_file():
 def error_page():
     print(goblin.respond_to_action("error"))
     return "出錯了"
+@app.route("/window/goblin_ai")
+def goblin_ai_window():
+    return render_template("goblin_ai_inner.html")
