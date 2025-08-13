@@ -13,7 +13,7 @@
         width: 100%;
         margin: 0;
         padding: 0;
-    }
+    }   
     #desktop.desktop-bg {
         background-image: url('/wallpaper/{{ current_wallpapers.wallpaper1 }}');
         background-size: cover;
@@ -26,6 +26,15 @@
 <body>
 <div id="desktop" class="desktop-bg">
     <div id="taskbar" class="taskbar"></div>
+    <div id="power-btn" class="power-btn">
+    <img src="https://img.icons8.com/ios-filled/24/ffffff/power-off-button.png" />
+</div>
+<div id="power-menu" class="power-menu">
+    <div class="power-item" onclick="sleepMode()">💤 睡眠模式</div>
+    <div class="power-item" onclick="restartSystem()">🔄 重启系统</div>
+    <div class="power-item" onclick="window.location.href='/logout'">🚪 登出账号</div>
+    <div class="power-item" onclick="shutdownSystem()">⛔ 关闭系统</div>
+</div>
     <div id="start-menu-btn" class="start-menu-btn">
         <img src="https://img.icons8.com/ios-filled/32/000000/windows8.png" style="vertical-align:middle;">
         <span>开始</span>
