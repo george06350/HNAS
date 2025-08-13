@@ -4,6 +4,7 @@ import socket
 import datetime
 import requests
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, abort
+from ai_module.goblin_ai import GoblinAI
 import hashlib
 
 DATA_ROOT = os.path.abspath('data')
@@ -412,4 +413,18 @@ def serve_wallpaper(filename):
     return send_from_directory(WALLPAPER_DIR, filename)
 
 if __name__ == '__main__':
+
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+goblin = GoblinAI(username="hray1413")
+
+@app.route("/upload", methods=["POST"])
+def upload_file():
+    # ...原本的上傳邏輯
+    print(goblin.respond_to_action("upload"))
+    return "上傳完成"
+
+@app.route("/error")
+def error_page():
+    print(goblin.respond_to_action("error"))
+    return "出錯了"
