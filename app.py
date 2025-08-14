@@ -22,15 +22,54 @@ abort = import_or_install("flask").abort
 generate_password_hash = import_or_install("werkzeug.security").generate_password_hash
 check_password_hash = import_or_install("werkzeug.security").check_password_hash
 secure_filename = import_or_install("werkzeug.utils").secure_filename
-
+make_ssl_devcert = import_or_install("werkzeug.serving").make_ssl_devcert  # 補上這行
+socket_std = import_or_install("socket")  # 改名
 requests = import_or_install("requests")
 GoblinAI = import_or_install("ai_module.goblin_ai").GoblinAI
 
+make_ssl_devcert = import_or_install("werkzeug.serving").make_ssl_devcert
+import_or_install("cryptography")  # SSL 憑證生成必須有
+# ===== 資料夾路徑 =====
 DATA_ROOT = os.path.abspath('data')
 SYSTEM_ROOT = os.path.join(DATA_ROOT, 'system')
-USER_BASE = os.path.join(SYSTEM_ROOT, 'users')  # 由 data/users -> data/system/users
+USER_BASE = os.path.join(SYSTEM_ROOT, 'users')       # 由 data/users -> data/system/users
 USER_CFG_BASE = os.path.join(SYSTEM_ROOT, 'user-data')  # 由 data/system/user -> data/system/user-data
 WALLPAPER_DIR = os.path.join(SYSTEM_ROOT, "wallpaper")
+'''
+# ===== SSL 憑證自動檢查與生成 =====
+SSL_CERT = 'ssl'  # 會生成 ssl.crt 和 ssl.key
+if not (os.path.exists(f"{SSL_CERT}.crt") and os.path.exists(f"{SSL_CERT}.key")):
+    print("[SSL] 憑證不存在，自動生成中...")
+    make_ssl_devcert(SSL_CERT, host='localhost')
+    print("[SSL] 憑證已生成")
+'''
+def get_lan_ip():
+    ip_list = []
+    hostname = socket.gethostname()
+    try:
+        # 嘗試用 hostname 取得 IP
+        host_ip = socket.gethostbyname(hostname)
+        if not host_ip.startswith("127."):
+            ip_list.append(host_ip)
+    except:
+        pass
+
+    # 遍歷所有網路介面
+    try:
+        for addr in socket.getaddrinfo(hostname, None):
+            ip = addr[4][0]
+            if ":" not in ip and not ip.startswith("127."):
+                ip_list.append(ip)
+    except:
+        pass
+
+    if ip_list:
+        return ip_list[0]  # 回傳第一個非 127.0.0.1 的 IP
+    return "127.0.0.1"
+
+if __name__ == '__main__':
+    LAN_IP = get_lan_ip()
+    print(f"[INFO] 自動檢測 LAN IP: {LAN_IP}")
 
 def ensure_wallpaper_dir_and_files():
     os.makedirs(WALLPAPER_DIR, exist_ok=True)
@@ -436,8 +475,8 @@ def serve_wallpaper(filename):
     return send_from_directory(WALLPAPER_DIR, filename)
 
 if __name__ == '__main__':
-
     app.run(debug=True, host='0.0.0.0', port=5000)
+    #app.run(ssl_context=(f"{SSL_CERT}.crt", f"{SSL_CERT}.key"), debug=True, host='0.0.0.0', port=5000)
 
 goblin = GoblinAI(username="hray1413")
 
