@@ -37,13 +37,13 @@ USER_BASE = os.path.join(SYSTEM_ROOT, 'users')       # 由 data/users -> data/sy
 USER_CFG_BASE = os.path.join(SYSTEM_ROOT, 'user-data')  # 由 data/system/user -> data/system/user-data
 WALLPAPER_DIR = os.path.join(SYSTEM_ROOT, "wallpaper")
 '''
-# ===== SSL 憑證自動檢查與生成 =====
+
 SSL_CERT = 'ssl'  # 會生成 ssl.crt 和 ssl.key
 if not (os.path.exists(f"{SSL_CERT}.crt") and os.path.exists(f"{SSL_CERT}.key")):
     print("[SSL] 憑證不存在，自動生成中...")
     make_ssl_devcert(SSL_CERT, host='localhost')
     print("[SSL] 憑證已生成")
-'''
+
 def get_lan_ip():
     ip_list = []
     hostname = socket.gethostname()
@@ -529,3 +529,4 @@ if __name__ == '__main__':
     run_server()
 # 確保 SSL 憑證目錄存在
 os.makedirs(SSL_CERT_DIR, exist_ok=True)
+
