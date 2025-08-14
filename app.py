@@ -29,6 +29,7 @@ GoblinAI = import_or_install("ai_module.goblin_ai").GoblinAI
 
 make_ssl_devcert = import_or_install("werkzeug.serving").make_ssl_devcert
 import_or_install("cryptography")  # SSL 憑證生成必須有
+
 # ===== 資料夾路徑 =====
 DATA_ROOT = os.path.abspath('data')
 SYSTEM_ROOT = os.path.join(DATA_ROOT, 'system')
@@ -493,3 +494,38 @@ def error_page():
 @app.route("/window/goblin_ai")
 def goblin_ai_window():
     return render_template("goblin_ai_inner.html")
+import os
+from flask import Flask
+from werkzeug.serving import make_ssl_devcert
+
+SSL_CERT_DIR = os.path.join(SYSTEM_ROOT, 'ssl')
+SSL_CERT_FILE = os.path.join(SSL_CERT_DIR, 'goblin_ssl')
+CRT = f"{SSL_CERT_FILE}.crt"
+KEY = f"{SSL_CERT_FILE}.key"
+
+def init_ssl():
+    if not (os.path.exists(CRT) and os.path.exists(KEY)):
+        print("[SSL] 憑證不存在，Goblin 正在召喚魔法陣...")
+        try:
+            os.makedirs(SSL_CERT_DIR, exist_ok=True)
+            make_ssl_devcert(SSL_CERT_FILE, host='localhost')
+            print("[SSL] 憑證召喚成功！")
+        except Exception as e:
+            print(f"[SSL] 憑證生成失敗：{e}")
+            try:
+                print(goblin.respond_to_action("error"))
+            except:
+                print("[GoblinAI] 無法啟動情緒支援，請手動檢查 SSL 問題。")
+
+def run_server():
+    init_ssl()
+    try:
+        app.run(ssl_context=(CRT, KEY), debug=True, host='0.0.0.0', port=5000)
+    except Exception as e:
+        print(f"[SSL] 啟動失敗，改用非加密模式：{e}")
+        app.run(debug=True, host='0.0.0.0', port=5000)
+
+if __name__ == '__main__':
+    run_server()
+# 確保 SSL 憑證目錄存在
+os.makedirs(SSL_CERT_DIR, exist_ok=True)
