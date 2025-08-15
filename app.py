@@ -36,7 +36,6 @@ SYSTEM_ROOT = os.path.join(DATA_ROOT, 'system')
 USER_BASE = os.path.join(SYSTEM_ROOT, 'users')       # 由 data/users -> data/system/users
 USER_CFG_BASE = os.path.join(SYSTEM_ROOT, 'user-data')  # 由 data/system/user -> data/system/user-data
 WALLPAPER_DIR = os.path.join(SYSTEM_ROOT, "wallpaper")
-'''
 
 SSL_CERT = 'ssl'  # 會生成 ssl.crt 和 ssl.key
 if not (os.path.exists(f"{SSL_CERT}.crt") and os.path.exists(f"{SSL_CERT}.key")):
