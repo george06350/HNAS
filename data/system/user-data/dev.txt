@@ -1,3 +1,0 @@
-username : dev
-password : ee5dfe9f2e18acb8c3995a65bc755ed6bc84c13b5e65c22502bdaa9f52f3e698
-register-time : 2025/08/25+22:25:02
