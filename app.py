@@ -26,7 +26,7 @@ make_ssl_devcert = import_or_install("werkzeug.serving").make_ssl_devcert  # 補
 socket_std = import_or_install("socket")  # 改名
 requests = import_or_install("requests")
 GoblinAI = import_or_install("ai_module.goblin_ai").GoblinAI
-
+Bcrypt = import_or_install("bcrypt")
 make_ssl_devcert = import_or_install("werkzeug.serving").make_ssl_devcert
 import_or_install("cryptography")  # SSL 憑證生成必須有
 
@@ -42,6 +42,20 @@ if not (os.path.exists(f"{SSL_CERT}.crt") and os.path.exists(f"{SSL_CERT}.key"))
     print("[SSL] 憑證不存在，自動生成中...")
     make_ssl_devcert(SSL_CERT, host='localhost')
     print("[SSL] 憑證已生成")
+
+def md5_file(file_path):
+    """計算檔案的 MD5"""
+    md5_hash = hashlib.md5()
+    try:
+        with open(file_path, "rb") as f:
+            # 一次讀取 64KB，適合大檔案
+            for byte_block in iter(lambda: f.read(65536), b""):
+                md5_hash.update(byte_block)
+        return md5_hash.hexdigest()
+    except FileNotFoundError:
+        return None
+    except PermissionError:
+        return None
 
 def get_lan_ip():
     ip_list = []
@@ -424,7 +438,7 @@ def settings_inner():
             os.remove(user_config_path(del_username))
             user_folder = os.path.join(USER_BASE, del_username)
             if os.path.isdir(user_folder):
-                import shutil
+                shutil = import_or_install("shutil")
                 shutil.rmtree(user_folder)
             message = f"用户 {del_username} 已删除"
         users = get_all_users()
@@ -525,23 +539,12 @@ def init_ssl():
 
 def run_server():
     init_ssl()
-<<<<<<< Updated upstream
     try:
         app.run(ssl_context=context, debug=True, host='0.0.0.0', port=5000)
         app.run(ssl_context=(CRT, KEY), debug=True, host='0.0.0.0', port=5000)
     except Exception as e:
         print(f"[SSL] 啟動失敗，改用非加密模式：{e}")
         app.run(debug=True, host='0.0.0.0', port=5000)
-=======
-    if not (os.path.exists(f"{SSL_CERT}.crt") and os.path.exists(f"{SSL_CERT}.key")):
-        print("可能是權限不足，Goblin 正在嘗試使用非加密模式啟動...")
-    else:
-        try:
-            app.run(ssl_context=(CRT, KEY), debug=True, host='0.0.0.0', port=5000)
-        except Exception as e:
-            print(f"[SSL] 啟動失敗，改用非加密模式：{e}")
-            app.run(debug=True, host='0.0.0.0', port=5000)
->>>>>>> Stashed changes
 
 if __name__ == '__main__':
     run_server()
