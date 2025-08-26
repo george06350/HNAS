@@ -525,12 +525,23 @@ def init_ssl():
 
 def run_server():
     init_ssl()
+<<<<<<< Updated upstream
     try:
         app.run(ssl_context=context, debug=True, host='0.0.0.0', port=5000)
         app.run(ssl_context=(CRT, KEY), debug=True, host='0.0.0.0', port=5000)
     except Exception as e:
         print(f"[SSL] 啟動失敗，改用非加密模式：{e}")
         app.run(debug=True, host='0.0.0.0', port=5000)
+=======
+    if not (os.path.exists(f"{SSL_CERT}.crt") and os.path.exists(f"{SSL_CERT}.key")):
+        print("可能是權限不足，Goblin 正在嘗試使用非加密模式啟動...")
+    else:
+        try:
+            app.run(ssl_context=(CRT, KEY), debug=True, host='0.0.0.0', port=5000)
+        except Exception as e:
+            print(f"[SSL] 啟動失敗，改用非加密模式：{e}")
+            app.run(debug=True, host='0.0.0.0', port=5000)
+>>>>>>> Stashed changes
 
 if __name__ == '__main__':
     run_server()
