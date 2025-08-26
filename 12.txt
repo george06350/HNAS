@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>文件管理器</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+    body { background: #181c23; color: #e4eaf6; min-height: 100vh; }
+    .fm-main {
+        max-width: 1060px;
+        margin: 30px auto 0 auto;
+        background: rgba(30,32,36,0.96);
+        border-radius: 18px;
+        box-shadow: 0 2px 22px #0005;
+        padding: 22px 32px 24px 32px;
+    }
+    .fm-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 22px;
+    }
+    .fm-header .fm-path {
+        font-size: 1.15em;
+        color: #a0bce4;
+        font-weight: 500;
+        background: #23262c;
+        border-radius: 9px;
+        padding: 4px 13px;
+    }
+    .fm-header .fm-actions .btn {
+        margin-left: 12px;
+    }
+    .fm-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 36px 34px;
+        margin: 24px 0 0 0;
+        padding: 0;
+    }
+    .fm-item {
+        width: 120px;
+        text-align: center;
+        padding: 16px 4px 10px 4px;
+        background: rgba(36,38,46,0.98);
+        border-radius: 13px;
+        box-shadow: 0 2px 8px #0001;
+        cursor: pointer;
+        transition: background 0.13s;
+        position: relative;
+        user-select: none;
+    }
+    .fm-item:hover, .fm-item:focus {
+        background: #23283b;
+        color: #50bffd;
+    }
+    .fm-item .fm-icon {
+        font-size: 3.2em;
+        margin-bottom: 10px;
+        display: block;
+    }
+    .fm-item .fm-img-thumb {
+        width: 54px;
+        height: 54px;
+        object-fit: cover;
+        border-radius: 11px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 7px #0002;
+        border: 1px solid #222;
+        background: #262c33;
+    }
+    .fm-item .fm-label {
+        font-size: 1.01em;
+        color: #eaf6ff;
+        word-break: break-all;
+        text-shadow: 0 1px 8px #1118;
+    }
+    .fm-item .fm-badge {
+        position: absolute;
+        top: 8px; right: 12px;
+        background: #25aaff;
+        color: #fff;
+        border-radius: 7px;
+        font-size: 0.82em;
+        padding: 2px 8px;
+        opacity: 0.88;
+    }
+    .fm-upload-bar {
+        margin-bottom: 18px;
+    }
+    .fm-toolbar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    .fm-breadcrumb {
+        margin-bottom: 10px;
+        font-size: 1.04em;
+        color: #b2c7dd;
+    }
+    .fm-breadcrumb a {
+        color: #7cc9ff;
+        text-decoration: none;
+        margin: 0 2px;
+    }
+    .fm-breadcrumb a:hover {text-decoration: underline;}
+    </style>
+</head>
+<body>
+<div class="fm-main">
+    <div class="fm-header">
+        <div class="fm-path">
+            {% if not cur_path %}
+                主文件夹
+            {% else %}
+                {{ cur_path.replace("/", " / ") }}
+            {% endif %}
+        </div>
+        <div class="fm-actions">
+            {% if cur_path %}
+                <button class="btn btn-secondary btn-sm" onclick="fileNavUp()">⬅ 返回上级</button>
+            {% endif %}
+        </div>
+    </div>
+    {% if not cur_path and roots %}
+    <div class="fm-grid">
+        <div class="fm-item" tabindex="0" onclick="fileNavTo('system/wallpaper')" ondblclick="fileNavTo('system/wallpaper')">
+            <span class="fm-icon">🖼️</span>
+            <span class="fm-badge">图片</span>
+            <div class="fm-label">图片文件夹</div>
+        </div>
+        <div class="fm-item" tabindex="0" onclick="fileNavTo('system/users/{{ session['username'] }}/file')" ondblclick="fileNavTo('users/{{ session['username'] }}/file')">
+            <span class="fm-icon">📁</span>
+            <span class="fm-badge">个人</span>
+            <div class="fm-label">用户文件夹</div>
+        </div>
+        <div class="fm-item" tabindex="0" onclick="fileNavTo('system')" ondblclick="fileNavTo('system')">
+            <span class="fm-icon">📁</span>
+            <span class="fm-badge">系统</span>
+            <div class="fm-label">系统目录</div>
+        </div>
+    </div>
+    {% elif entries %}
+    <div class="fm-breadcrumb">
+        <a href="javascript:void(0)" onclick="fileNavRoot()">主文件夹</a>
+        {% set crumbs = cur_path.split('/') if cur_path else [] %}
+        {% set crumb_path = [] %}
+        {% for c in crumbs %}
+            {% set _ = crumb_path.append(c) %}
+            / <a href="javascript:void(0)" onclick="fileNavTo('{{ '/'.join(crumb_path) }}')">{{ c }}</a>
+        {% endfor %}
+    </div>
+    <div class="fm-grid">
+        {% for entry in entries %}
+        <div class="fm-item" tabindex="0" onclick="fileOpen('{{ entry.rel_path }}', {{ 'true' if entry.is_dir else 'false' }})" ondblclick="fileOpen('{{ entry.rel_path }}', {{ 'true' if entry.is_dir else 'false' }})">
+            {% if entry.is_dir %}
+                <span class="fm-icon">📁</span>
+            {% elif entry.name.lower().endswith(('.png','.jpg','.jpeg','.gif','.bmp','.webp')) %}
+                <img class="fm-img-thumb" src="/filemanager_inner/preview/{{ entry.rel_path }}?thumb=1" alt="图片缩略" onerror="this.style.display='none';">
+            {% else %}
+                <span class="fm-icon">📄</span>
+            {% endif %}
+            <div class="fm-label">{{ entry.name }}</div>
+            {% if entry.is_dir %}
+                <span class="fm-badge">文件夹</span>
+            {% elif entry.name.lower().endswith(('.png','.jpg','.jpeg','.gif','.bmp','.webp')) %}
+                <span class="fm-badge">图片</span>
+            {% else %}
+                <span class="fm-badge">文件</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="fm-upload-bar mt-4">
+        <form action="/filemanager_inner/upload" method="post" enctype="multipart/form-data" target="upload_frame">
+            <input type="file" name="file" required>
+            <input type="hidden" name="cur_path" value="{{ cur_path }}">
+            <button class="btn btn-sm btn-success">上传文件</button>
+            <iframe style="display:none" name="upload_frame"></iframe>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 图片预览模态框 -->
+<div class="modal fade" id="imgPreviewModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-dark">
+      <div class="modal-header">
+        <h5 class="modal-title text-white">图片预览</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="imgPreview" src="" alt="图片" style="max-width:95vw;max-height:68vh;border-radius:9px;">
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function fileOpen(rel, isDir) {
+    if(isDir) {
+        fileNavTo(rel);
+    } else {
+        if(/\.(png|jpe?g|gif|bmp|webp)$/i.test(rel)) {
+            previewImage(rel);
+        } else {
+            window.open('/filemanager_inner/download/' + rel, '_blank');
+        }
+    }
+}
+function fileNavTo(rel) {
+    fetch('/filemanager_inner/' + rel).then(r=>r.text()).then(html=>{
+        if(document.getElementById('window-area')) {
+            document.getElementById('window-area').innerHTML = html;
+        } else {
+            document.body.innerHTML = html;
+        }
+    });
+}
+function fileNavRoot() {
+    fetch('/filemanager_inner/').then(r=>r.text()).then(html=>{
+        if(document.getElementById('window-area')) {
+            document.getElementById('window-area').innerHTML = html;
+        } else {
+            document.body.innerHTML = html;
+        }
+    });
+}
+function fileNavUp() {
+    let path = "{{ cur_path }}";
+    if(!path || path === "system/wallpaper" || path === "system/other_dirs" || path === "users/{{ session['username'] }}/file") {
+        fileNavRoot();
+        return;
+    }
+    let arr = path.split('/');
+    arr.pop();
+    let up = arr.join('/');
+    if(!up || up === "system") {
+        fileNavRoot();
+        return;
+    }
+    fileNavTo(up);
+}
+function previewImage(rel) {
+    document.getElementById('imgPreview').src = '/filemanager_inner/preview/' + rel + '?v=' + Math.random();
+    var modal = new bootstrap.Modal(document.getElementById('imgPreviewModal'));
+    modal.show();
+}
+</script>
+</body>
+</html>

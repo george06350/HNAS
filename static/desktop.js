@@ -1,37 +1,53 @@
 document.getElementById('start-menu-btn').onclick = function() {
-    var menu = document.getElementById('start-menu');
-    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    const menu = document.getElementById('start-menu');
+    if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+    } else {
+        menu.style.display = 'block';
+        // 加入固定選項
+        if (!document.getElementById('pin-start-menu')) {
+            const pinItem = document.createElement('div');
+            pinItem.id = 'pin-start-menu';
+            pinItem.className = 'menu-item';
+            pinItem.innerHTML = '📌 固定开始菜单';
+            pinItem.onclick = function() {
+                startMenuPinned = !startMenuPinned;
+                pinItem.innerHTML = startMenuPinned ? '❌ 取消固定' : '📌 固定开始菜单';
+            };
+            menu.appendChild(pinItem);
+        }
+    }
 };
 document.body.onclick = function(e) {
     if (!e.target.closest('#start-menu') && !e.target.closest('#start-menu-btn')) {
         document.getElementById('start-menu').style.display = 'none';
     }
 }
-
+window.onload = function() {
+    openWindow('goblin_ai');
+};
 let zIndexCounter = 1000;
 let winIdCounter = 0;
+let startMenuPinned = false;
 const winIcons = {
     filemanager: `<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#2356a6" d="M3 6V4a2 2 0 0 1 2-2h5.17a2 2 0 0 1 1.41.59L13.59 4H21a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 2v10h18V6h-8.59l-2-2H5v2zm5 2h2v2h-2v-2z"></path></svg>`,
     about: `<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#2356a6"/><rect x="11" y="11" width="2" height="6" fill="#fff"/><rect x="11" y="7" width="2" height="2" fill="#fff"/></svg>`,
     settings: `<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#2356a6" d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm7.43-3.78l2.06-1.63a1 1 0 0 0 .21-1.32l-2-3.46a1 1 0 0 0-1.25-.45l-2.43.98a7.03 7.03 0 0 0-1.5-.87l-.37-2.6A1 1 0 0 0 12 2h-4a1 1 0 0 0-1 .88l-.38 2.6c-.54.23-1.05.51-1.5.87l-2.43-.98a1 1 0 0 0-1.25.45l-2 3.46a1 1 0 0 0 .21 1.32l2.06 1.63a6.85 6.85 0 0 0 0 1.74l-2.06 1.63a1 1 0 0 0-.21 1.32l2 3.46a1 1 0 0 0 1.25.45l2.43-.98c.45.36.96.64 1.5.87l.38 2.6A1 1 0 0 0 8 22h4a1 1 0 0 0 1-.88l.37-2.6c.54-.23 1.05-.51 1.5-.87l2.43.98a1 1 0 0 0 1.25-.45l2-3.46a1 1 0 0 0-.21-1.32l-2.06-1.63c.09-.29.09-.6 0-.89z"></path></svg>`
 };
 function openWindow(app) {
-    let winTitle, url, icon;
-    if (app === 'filemanager') {
-        winTitle = '文件管理器';
-        url = '/filemanager_inner/';
-        icon = winIcons.filemanager;
-    } else if (app === 'about') {
-        winTitle = '关于 HNAS';
-        url = '/about_inner';
-        icon = winIcons.about;
-    } else if (app === 'settings') {
-        winTitle = '设置';
-        url = '/settings_inner';
-        icon = winIcons.settings;
-    } else {
-        return;
-    }
+    const winTitleMap = {
+        filemanager: '文件管理器',
+        about: '关于 HNAS',
+        settings: '设置',
+        goblin_ai: 'Goblin Chat'
+    };
+
+    const iconMap = winIcons;
+    const winTitle = winTitleMap[app] || '未知窗口';
+    const url = `/window/${app}`;
+    const icon = iconMap[app] || '';
+    win.style.zIndex = ++zIndexCounter;
+
     createWindow(winTitle, url, app, icon);
 }
 
@@ -52,6 +68,9 @@ function createWindow(title, url, appType, icon) {
     </div>
     <iframe src="${url}" class="win-content" frameborder="0"></iframe>`;
     windowArea.appendChild(win);
+    win.style.resize = 'both';
+    win.style.overflow = 'auto';
+    win.dataset.pinned = "false";
 
     // 拖动
     const titlebar = win.querySelector('.win-titlebar');
@@ -159,10 +178,38 @@ function closeSvg() {
 }
 
 // 保证窗口激活时高亮任务栏
+document.body.addEventListener('click', function(e) {
+    const isStartMenuClick = e.target.closest('#start-menu') || e.target.closest('#start-menu-btn');
+    const isWindowClick = e.target.closest('.win');
+    if (!isStartMenuClick && !isWindowClick && !startMenuPinned) {
+        document.getElementById('start-menu').style.display = 'none';
+    }
+});
 document.addEventListener('click', function(e){
     let win = e.target.closest('.win');
-    if (win) {
+    if (win && win.dataset.pinned !== "true") {
         win.style.zIndex = ++zIndexCounter;
         updateTaskbar();
     }
 });
+win.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    menu.style.top = e.clientY + 'px';
+    menu.style.left = e.clientX + 'px';
+    menu.innerHTML = `<div class="context-item">${win.dataset.pinned === "true" ? "取消置頂" : "置頂鎖定"}</div>`;
+    document.body.appendChild(menu);
+
+    menu.onclick = function() {
+        win.dataset.pinned = win.dataset.pinned === "true" ? "false" : "true";
+        win.style.zIndex = win.dataset.pinned === "true" ? 9999 : ++zIndexCounter;
+        menu.remove();
+        updateTaskbar();
+    };
+
+    document.addEventListener('click', () => menu.remove(), { once: true });
+});
+
+
+

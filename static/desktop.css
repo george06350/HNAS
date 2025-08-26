@@ -198,3 +198,87 @@ body, html, #desktop {
     border: none;
     background: #f5f8fb;
 }
+.win[data-app-type="goblin_ai"] {
+    border: 2px dashed #7f5af0;
+    box-shadow: 0 0 12px #7f5af088;
+    animation: goblinPulse 2s infinite;
+}
+@keyframes goblinPulse {
+    0% { box-shadow: 0 0 8px #7f5af088; }
+    50% { box-shadow: 0 0 16px #7f5af0aa; }
+    100% { box-shadow: 0 0 8px #7f5af088; }
+}
+
+.win[data-app-type="filemanager"] {
+    border-left: 6px solid #3776d6;
+}
+.win[data-app-type="filemanager"] .win-titlebar {
+    background: linear-gradient(90deg, #3776d6, #2356a6);
+}
+
+.win[data-app-type="settings"] {
+    border: 2px solid #d4eaf7;
+}
+.win[data-app-type="settings"] .win-titlebar {
+    background: linear-gradient(90deg, #d4eaf7, #a6c8f0);
+}
+
+.win[data-app-type="about"] .win-titlebar {
+    background: linear-gradient(90deg, #3776d6, #2356a6);
+}
+
+#desktop::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(2px);
+    z-index: -1;
+}
+
+.chat-bubble.goblin {
+    background: #e6efff;
+    color: #2356a6;
+    font-style: italic;
+    border-left: 4px solid #3776d6;
+    margin-left: 12px;
+    margin-right: auto;
+    max-width: 80%;
+    border-radius: 10px 10px 10px 4px;
+}
+.chat-bubble.user {
+    background: #d0eaff;
+    text-align: right;
+    border-right: 4px solid #7f5af0;
+    margin-right: 12px;
+    margin-left: auto;
+    max-width: 80%;
+    border-radius: 10px 10px 4px 10px;
+}
+
+.chat-input-area {
+    display: flex;
+    padding: 8px;
+    border-top: 1px solid #ccc;
+    background: #f0f4fa;
+}
+.chat-input-area input {
+    flex: 1;
+    padding: 6px;
+    font-family: monospace;
+    border: 1px solid #b3c6e0;
+    border-radius: 6px;
+}
+.chat-input-area button {
+    margin-left: 8px;
+    padding: 6px 12px;
+    background-color: #3776d6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+.chat-input-area button:hover {
+    background-color: #2356a6;
+}

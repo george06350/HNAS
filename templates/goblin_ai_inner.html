@@ -1,0 +1,110 @@
+<div class="window" id="goblin-chat-window">
+  <div class="title-bar">
+    <div class="title-bar-text">Goblin Chat</div>
+    <div class="title-bar-controls">
+      <button aria-label="Minimize"></button>
+      <button aria-label="Maximize"></button>
+      <button aria-label="Close" onclick="closeGoblinChat()"></button>
+    </div>
+  </div>
+
+  <div class="window-body" style="height: 300px; overflow-y: auto;" id="goblin-chat-log">
+    <div class="chat-bubble user">我今天該備份嗎？</div>
+    <div class="chat-bubble goblin">🧠 備份？你是在封印情感還是在逃避現實？</div>
+  </div>
+
+  <div class="chat-input-area">
+    <input type="text" id="goblin-chat-input" placeholder="Type your chaos..." />
+    <button onclick="sendGoblinMessage()">Send</button>
+  </div>
+</div>
+
+<style>
+  #goblin-chat-window {
+    width: 400px;
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    z-index: 10;
+  }
+
+  .chat-bubble {
+    margin: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+    font-family: monospace;
+  }
+
+  .chat-bubble.user {
+    background-color: #d0eaff;
+    align-self: flex-end;
+    text-align: right;
+  }
+
+  .chat-bubble.goblin {
+    background-color: #f0f0f0;
+    color: #3776d6;
+    font-style: italic;
+  }
+
+  .chat-input-area {
+    display: flex;
+    padding: 8px;
+    border-top: 1px solid #ccc;
+  }
+
+  .chat-input-area input {
+    flex: 1;
+    padding: 6px;
+    font-family: monospace;
+  }
+
+  .chat-input-area button {
+    margin-left: 8px;
+    padding: 6px 12px;
+    background-color: #3776d6;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  function sendGoblinMessage() {
+    const input = document.getElementById("goblin-chat-input");
+    const log = document.getElementById("goblin-chat-log");
+
+    const userText = input.value.trim();
+    if (!userText) return;
+
+    const userBubble = document.createElement("div");
+    userBubble.className = "chat-bubble user";
+    userBubble.textContent = userText;
+    log.appendChild(userBubble);
+
+    // 模擬 Goblin 回應（可改為 AJAX 呼叫後端）
+    const goblinBubble = document.createElement("div");
+    goblinBubble.className = "chat-bubble goblin";
+    goblinBubble.textContent = generateGoblinReply(userText);
+    log.appendChild(goblinBubble);
+
+    input.value = "";
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function generateGoblinReply(text) {
+    const replies = [
+      "🧠 你不是在備份，你是在封印情感。",
+      "⚠️ anime.overflow@core，請立即冷靜。",
+      "👾 debug 是宇宙給你的愛的試煉。",
+      "💾 我已經快變成你的動漫博物館了。",
+      "🪐 NAS 表示壓力很大，但我還是愛你。"
+    ];
+    return replies[Math.floor(Math.random() * replies.length)];
+  }
+
+  function closeGoblinChat() {
+    document.getElementById("goblin-chat-window").style.display = "none";
+  }
+</script>

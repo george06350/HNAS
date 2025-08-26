@@ -129,8 +129,14 @@
             <span class="fm-badge">图片</span>
             <div class="fm-label">图片文件夹</div>
         </div>
-        <div class="fm-item" tabindex="0" onclick="fileNavTo('system/users/{{ session['username'] }}/file')" ondblclick="fileNavTo('users/{{ session['username'] }}/file')">
-            <span class="fm-icon">📁</span>
+        <div class="fm-item" tabindex="0"
+     data-username="{{ session['username'] | escape }}"
+     onclick="fileNavTo(`system/users/${encodeURIComponent(this.dataset.username)}/file`)"
+     ondblclick="fileNavTo(`users/${encodeURIComponent(this.dataset.username)}/file`)"
+     aria-label="使用者 {{ session['username'] | escape }} 的檔案資料夾"
+     title="點擊進入 {{ session['username'] | escape }} 的 Goblin 檔案庫">
+</div>
+
             <span class="fm-badge">个人</span>
             <div class="fm-label">用户文件夹</div>
         </div>
@@ -152,7 +158,15 @@
     </div>
     <div class="fm-grid">
         {% for entry in entries %}
-        <div class="fm-item" tabindex="0" onclick="fileOpen('{{ entry.rel_path }}', {{ 'true' if entry.is_dir else 'false' }})" ondblclick="fileOpen('{{ entry.rel_path }}', {{ 'true' if entry.is_dir else 'false' }})">
+        <div class="fm-item" tabindex="0"
+     data-relpath="{{ entry.rel_path | escape }}"
+     data-isdir="{{ entry.is_dir | tojson }}"
+     onclick="fileOpen(this.dataset.relpath, JSON.parse(this.dataset.isdir))"
+     ondblclick="fileOpen(this.dataset.relpath, JSON.parse(this.dataset.isdir))"
+     aria-label="開啟 {{ entry.rel_path | escape }}（{{ '資料夾' if entry.is_dir else '檔案' }}）"
+     title="點擊開啟 {{ entry.rel_path | escape }}">
+</div>
+
             {% if entry.is_dir %}
                 <span class="fm-icon">📁</span>
             {% elif entry.name.lower().endswith(('.png','.jpg','.jpeg','.gif','.bmp','.webp')) %}

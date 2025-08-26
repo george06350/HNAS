@@ -1,71 +1,83 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>HNAS 桌面</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/desktop.css">
-    <style>
-    /* 保证壁纸正常显示和过渡效果 */
-    body, html, #desktop.desktop-bg {
-        min-height: 100vh;
-        min-width: 100vw;
-        height: 100%;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-    #desktop.desktop-bg {
-        background-image: url('/wallpaper/{{ current_wallpapers.wallpaper1 }}');
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-        transition: background-image 0.5s;
-    }
-    </style>
-</head>
-<body>
-<div id="desktop" class="desktop-bg">
-    <div id="taskbar" class="taskbar"></div>
-    <div id="start-menu-btn" class="start-menu-btn">
-        <img src="https://img.icons8.com/ios-filled/32/000000/windows8.png" style="vertical-align:middle;">
-        <span>开始</span>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>HNAS 桌面</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/static/desktop.css">
+        <style>
+        /* 保证壁纸正常显示和过渡效果 */
+        body, html, #desktop.desktop-bg {
+            min-height: 100vh;
+            min-width: 100vw;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }   
+        #desktop.desktop-bg {
+            background-image: url('/wallpaper/{{ current_wallpapers.wallpaper1 }}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            transition: background-image 0.5s;
+        }
+        </style>
+    </head>
+    <body>
+    <div id="desktop" class="desktop-bg">
+        <div id="taskbar" class="taskbar"></div>
+        <div id="power-btn" class="power-btn">
+        <img src="https://img.icons8.com/ios-filled/24/ffffff/power-off-button.png" />
     </div>
-    <!-- Windows 11 风格分组开始菜单 -->
-    <div id="start-menu" class="start-menu">
-        <div class="menu-section">
-            <div class="menu-section-title">系统</div>
-            <div class="menu-item" onclick="openWindow('filemanager')">
-                <img src="https://img.icons8.com/ios-filled/24/000000/folder-invoices--v1.png">
-                文件管理器
-            </div>
-            <div class="menu-item" onclick="openWindow('settings')">
-                <img src="https://img.icons8.com/ios-filled/24/000000/settings--v1.png">
-                设置
-            </div>
-        </div>
-        <div class="menu-section">
-            <div class="menu-section-title">信息</div>
-            <div class="menu-item" onclick="openWindow('about')">
-                <img src="https://img.icons8.com/ios-filled/24/000000/info--v1.png">
-                关于 HNAS
-            </div>
-        </div>
-        <div class="menu-section">
-            <div class="menu-section-title">账户</div>
-            <div class="menu-item" onclick="window.location.href='/logout'">
-                <img src="https://img.icons8.com/ios-filled/24/000000/logout-rounded-left.png">
-                退出登录
-            </div>
-        </div>
+    <div id="power-menu" class="power-menu">
+        <div class="power-item" onclick="sleepMode()">💤 睡眠模式</div>
+        <div class="power-item" onclick="restartSystem()">🔄 重启系统</div>
+        <div class="power-item" onclick="window.location.href='/logout'">🚪 登出账号</div>
+        <div class="power-item" onclick="shutdownSystem()">⛔ 关闭系统</div>
     </div>
-    <div id="window-area"></div>
-</div>
-<script src="/static/desktop.js"></script>
-<script>
-// 支持切换壁纸预览（如有需要可扩展为自动换壁纸）
-function setWallpaper(url) {
-    document.getElementById('desktop').style.backgroundImage = 'url(' + url + ')';
-}
-</script>
-</body>
-</html>
+        <div id="start-menu-btn" class="start-menu-btn">
+            <img src="https://img.icons8.com/ios-filled/32/000000/windows8.png" style="vertical-align:middle;">
+            <span>开始</span>
+        </div>
+        <!-- Windows 11 风格分组开始菜单 -->
+        <div id="start-menu" class="start-menu">
+            <div class="menu-section">
+                <div class="menu-section-title">系统</div>
+                <div class="menu-item" onclick="openWindow('filemanager')">
+                    <img src="https://img.icons8.com/ios-filled/24/000000/folder-invoices--v1.png">
+                    文件管理器
+                </div>
+                <div class="menu-item" onclick="openWindow('settings')">
+                    <img src="https://img.icons8.com/ios-filled/24/000000/settings--v1.png">
+                    设置
+                </div>
+                <div class="menu-item" onclick="openWindow('goblin_ai')">
+                    <img src="https://img.icons8.com/ios-filled/24/000000/chat.png">
+                    Goblin Chat
+            </div>
+            <div class="menu-section">
+                <div class="menu-section-title">信息</div>
+                <div class="menu-item" onclick="openWindow('about')">
+                    <img src="https://img.icons8.com/ios-filled/24/000000/info--v1.png">
+                    关于 HNAS
+                </div>
+            </div>
+            <div class="menu-section">
+                <div class="menu-section-title">账户</div>
+                <div class="menu-item" onclick="window.location.href='/logout'">
+                    <img src="https://img.icons8.com/ios-filled/24/000000/logout-rounded-left.png">
+                    退出登录
+                </div>
+            </div>
+        </div>
+        <div id="window-area"></div>
+    </div>
+    <script src="/static/desktop.js"></script>
+    <script>
+    // 支持切换壁纸预览（如有需要可扩展为自动换壁纸）
+    function setWallpaper(url) {
+        document.getElementById('desktop').style.backgroundImage = 'url(' + url + ')';
+    }
+    </script>
+    </body>
+    </html>

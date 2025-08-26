@@ -1,17 +1,75 @@
-import os
-import platform
-import socket
-import datetime
-import requests
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, abort
-from ai_module.goblin_ai import GoblinAI
-import hashlib
+# 自動安裝模組工具
+from autoinstall import import_or_install
 
+# ===== 標準庫 =====
+os = import_or_install("os")
+platform = import_or_install("platform")
+socket = import_or_install("socket")
+datetime_module = import_or_install("datetime")
+datetime = datetime_module.datetime
+hashlib = import_or_install("hashlib")
+
+# ===== 第三方套件 =====
+Flask = import_or_install("flask").Flask
+render_template = import_or_install("flask").render_template
+request = import_or_install("flask").request
+redirect = import_or_install("flask").redirect
+url_for = import_or_install("flask").url_for
+session = import_or_install("flask").session
+flash = import_or_install("flask").flash
+send_from_directory = import_or_install("flask").send_from_directory
+abort = import_or_install("flask").abort
+generate_password_hash = import_or_install("werkzeug.security").generate_password_hash
+check_password_hash = import_or_install("werkzeug.security").check_password_hash
+secure_filename = import_or_install("werkzeug.utils").secure_filename
+make_ssl_devcert = import_or_install("werkzeug.serving").make_ssl_devcert  # 補上這行
+socket_std = import_or_install("socket")  # 改名
+requests = import_or_install("requests")
+GoblinAI = import_or_install("ai_module.goblin_ai").GoblinAI
+
+make_ssl_devcert = import_or_install("werkzeug.serving").make_ssl_devcert
+import_or_install("cryptography")  # SSL 憑證生成必須有
+
+# ===== 資料夾路徑 =====
 DATA_ROOT = os.path.abspath('data')
 SYSTEM_ROOT = os.path.join(DATA_ROOT, 'system')
-USER_BASE = os.path.join(SYSTEM_ROOT, 'users')  # 由 data/users -> data/system/users
+USER_BASE = os.path.join(SYSTEM_ROOT, 'users')       # 由 data/users -> data/system/users
 USER_CFG_BASE = os.path.join(SYSTEM_ROOT, 'user-data')  # 由 data/system/user -> data/system/user-data
 WALLPAPER_DIR = os.path.join(SYSTEM_ROOT, "wallpaper")
+
+SSL_CERT = 'ssl'  # 會生成 ssl.crt 和 ssl.key
+if not (os.path.exists(f"{SSL_CERT}.crt") and os.path.exists(f"{SSL_CERT}.key")):
+    print("[SSL] 憑證不存在，自動生成中...")
+    make_ssl_devcert(SSL_CERT, host='localhost')
+    print("[SSL] 憑證已生成")
+
+def get_lan_ip():
+    ip_list = []
+    hostname = socket.gethostname()
+    try:
+        # 嘗試用 hostname 取得 IP
+        host_ip = socket.gethostbyname(hostname)
+        if not host_ip.startswith("127."):
+            ip_list.append(host_ip)
+    except:
+        pass
+
+    # 遍歷所有網路介面
+    try:
+        for addr in socket.getaddrinfo(hostname, None):
+            ip = addr[4][0]
+            if ":" not in ip and not ip.startswith("127."):
+                ip_list.append(ip)
+    except:
+        pass
+
+    if ip_list:
+        return ip_list[0]  # 回傳第一個非 127.0.0.1 的 IP
+    return "127.0.0.1"
+
+if __name__ == '__main__':
+    LAN_IP = get_lan_ip()
+    print(f"[INFO] 自動檢測 LAN IP: {LAN_IP}")
 
 def ensure_wallpaper_dir_and_files():
     os.makedirs(WALLPAPER_DIR, exist_ok=True)
@@ -50,7 +108,7 @@ def user_exists(username):
 
 def create_user(username, password):
     os.makedirs(USER_CFG_BASE, exist_ok=True)
-    now = datetime.datetime.now().strftime('%Y/%m/%d+%H:%M:%S')
+    now = datetime.now().strftime('%Y/%m/%d+%H:%M:%S')
     os.makedirs(os.path.join(USER_BASE, username, "file"), exist_ok=True)
     cfg_path = user_config_path(username)
     password = hashlib.sha256(password.encode()).hexdigest()
@@ -60,6 +118,7 @@ def create_user(username, password):
         f.write(f"register-time : {now}\n")
 
 def check_login(username, password):
+    global debug
     cfg = user_config_path(username)
     password = hashlib.sha256(password.encode()).hexdigest()
     if not os.path.exists(cfg):
@@ -68,6 +127,8 @@ def check_login(username, password):
         lines = f.readlines()
     for line in lines:
         if line.startswith('password : '):
+            if app.debug:
+                print(f"[DEBUG] 检查登录：用户名 {username}，输入的密码哈希值 {password}，实际存储的哈希值 {line.strip().split(' : ')[1]}")
             return line.strip().split(' : ')[1] == password
     return False
 
@@ -140,7 +201,8 @@ def login():
             flash('用户不存在', 'danger')
         elif not check_login(username, password):
             flash('密码不正确', 'danger')
-            print(f"登录失败：用户名 {username} 密码错误，輸入的密码哈希值为 {password}")
+            if app.debug:
+                print(f"登录失败：用户名 {username} 密码错误，輸入的密码哈希值为 {password}, 但实际存储的哈希值不匹配。")
         else:
             session['username'] = username
             flash('登录成功！', 'success')
@@ -412,9 +474,14 @@ def serve_wallpaper(filename):
     ensure_wallpaper_dir_and_files()
     return send_from_directory(WALLPAPER_DIR, filename)
 
-if __name__ == '__main__':
+import ssl
 
-    app.run(debug=True, host='0.0.0.0', port=5000)
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+context.load_cert_chain('cert.pem', 'key.pem')
+
+app.run(ssl_context=context, debug=True, host='0.0.0.0', port=5000)
+
+    #app.run(ssl_context=(f"{SSL_CERT}.crt", f"{SSL_CERT}.key"), debug=True, host='0.0.0.0', port=5000)
 
 goblin = GoblinAI(username="hray1413")
 
@@ -428,3 +495,47 @@ def upload_file():
 def error_page():
     print(goblin.respond_to_action("error"))
     return "出錯了"
+@app.route("/window/goblin_ai")
+def goblin_ai_window():
+    return render_template("goblin_ai_inner.html")
+import os
+from flask import Flask
+from werkzeug.serving import make_ssl_devcert
+
+SSL_CERT_DIR = os.path.join(SYSTEM_ROOT, 'ssl')
+SSL_CERT_FILE = os.path.join(SSL_CERT_DIR, 'goblin_ssl')
+CRT = f"{SSL_CERT_FILE}.crt"
+KEY = f"{SSL_CERT_FILE}.key"
+
+def init_ssl():
+    if not (os.path.exists(CRT) and os.path.exists(KEY)):
+        print("[SSL] 憑證不存在，Goblin 正在召喚魔法陣...")
+        try:
+            os.makedirs(SSL_CERT_DIR, exist_ok=True)
+            make_ssl_devcert(SSL_CERT_FILE, host='localhost')
+            print("[SSL] 憑證召喚成功！")
+        except Exception as e:
+            print(f"[SSL] 憑證生成失敗：{e}")
+            try:
+                print(goblin.respond_to_action("error"))
+            except:
+                print("[GoblinAI] 無法啟動情緒支援，請手動檢查 SSL 問題。")
+
+def run_server():
+    init_ssl()
+    try:
+        app.run(ssl_context=context, debug=True, host='0.0.0.0', port=5000)
+    except Exception as e:
+        print(f"[SSL] 啟動失敗，改用非加密模式：{e}")
+        app.run(debug=True, host='0.0.0.0', port=5000)
+
+if __name__ == '__main__':
+    run_server()
+# 確保 SSL 憑證目錄存在
+os.makedirs(SSL_CERT_DIR, exist_ok=True)
+if not (os.path.exists(CRT) and os.path.exists(KEY)):
+        try:
+            make_ssl_devcert(SSL_CERT_FILE, host='localhost')
+            print("[SSL] 根目錄憑證生成成功")
+        except Exception as e:
+            print(f"[SSL] 憑證生成失敗：{e}")
